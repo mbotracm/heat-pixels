@@ -21,12 +21,37 @@
  * Date: 20/05/2024
  */
 
+String COMMAND_PREFIX("ch");
+
 void setup() {
-  // put your setup code here, to run once:
+  // Configure serial channel to baudrate of 115,200 bps.
+  Serial.begin(115200);
 
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // Process input commands, should always start with ch and a digit.
+  char commandPrefix[2];
+  int channel = -1;
+  if (Serial.available() > 2) {
+    Serial.readBytes(commandPrefix, 2);
 
+    // If input corresponds to a valid command, parse channel number.
+    if (COMMAND_PREFIX == commandPrefix) {
+      channel = Serial.parseInt();
+      Serial.print("Received command for channel: ");
+      switch (channel) {
+        case 0:
+          Serial.println("0");
+          break;
+        default:
+          Serial.println("unknown...");
+          break;
+      }
+    } else {
+      Serial.print("Unrecognized command: ");
+      Serial.print(commandPrefix);
+      Serial.println(Serial.readStringUntil('\n'));
+    }
+  }
 }
