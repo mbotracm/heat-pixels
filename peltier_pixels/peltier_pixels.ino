@@ -57,6 +57,15 @@ void loop() {
       Serial.print("Received command for channel: ");
       Serial.println(channel);
 
+      // Validate channel number.
+      if (channel < 0 || (channel > 3 && channel != 9))
+      {
+        Serial.println("Invalid channel");
+        // Read remaining serial buffer to clear line.
+        Serial.readStringUntil('\n');
+        return;
+      }
+
       // Parse specific command.
       Serial.readBytes(subcommandPrefix, 3);
       Serial.print("Subcommand: ");
