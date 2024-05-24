@@ -21,11 +21,11 @@
  * Date: 20/05/2024
  */
 
-String COMMAND_PREFIX("ch");
-String SUBCOMMAND_PREFIX_CONST("con");
-String SUBCOMMAND_PREFIX_SINE("sin");
-String SUBCOMMAND_PREFIX_AMPLITUDE("amp");
-String SUBCOMMAND_PREFIX_MODULATION("mod");
+const String COMMAND_PREFIX("ch");
+const String SUBCOMMAND_PREFIX_CONST("con");
+const String SUBCOMMAND_PREFIX_SINE("sin");
+const String SUBCOMMAND_PREFIX_AMPLITUDE("amp");
+const String SUBCOMMAND_PREFIX_MODULATION("mod");
 
 void setup() {
   // Configure serial channel to baudrate of 115,200 bps.
@@ -55,22 +55,32 @@ void loop() {
       // Constant output value.
       if (SUBCOMMAND_PREFIX_CONST == subcommandPrefix)
       {
-        /* code */
+        // Set mod of operation to constant.
       }
       // Sine output value.
       if (SUBCOMMAND_PREFIX_SINE == subcommandPrefix)
       {
-        /* code */
+        // Parse desired frequency.
+        float freq = Serial.parseFloat();
+        Serial.print("Freq: ");
+        Serial.println(freq);
+        // Set mod of operation to constant.
       }
       // Set output amplitude.
       if (SUBCOMMAND_PREFIX_AMPLITUDE == subcommandPrefix)
       {
-        /* code */
+        // Parse desired amplitude.
+        uint8_t amplitude = Serial.parseInt();
+        Serial.print("Amp: ");
+        Serial.println(amplitude);
       }
       // Set output sine wave modulation.
       if (SUBCOMMAND_PREFIX_MODULATION == subcommandPrefix)
       {
-        /* code */
+        // Parse desired modulation.
+        float modulation = Serial.parseFloat();
+        Serial.print("Mod: ");
+        Serial.println(modulation);
       }
     }
     else
