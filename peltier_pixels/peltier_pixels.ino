@@ -45,6 +45,12 @@ void setup()
 {
   // Configure serial channel to baudrate of 115,200 bps.
   Serial.begin(115200);
+
+  // Configure output pins.
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    pinMode(CHANNEL_PIN_MAPPING[i], OUTPUT);
+  }
 }
 
 void parseCommands()
@@ -177,9 +183,39 @@ void parseCommands()
   }
 }
 
-void loop() {
+void configureChannels()
+{
+  // Loop over all channel and output corresponding configuration.
+  for (uint8_t i = 0; i < 4; i++)
+  {
+    int output = 0;
+
+    // Constant output.
+    if (channelOperationMode[i] == false)
+    {
+      output = channelAmplitude[i];
+    }
+    else
+    {
+      // Sine wave output.
+      // Angular frequency = 2pi*f.
+      float w = 2 * PI * channelSineFrequency[i];
+      // Time since beginning.
+      double t = millis() / 1000.0;
+      // Compute sine wave with modulation.
+      output = channelAmplitude[i] * sin(w * (t - channelSineModulation[i]));
+    }
+
+    // Output desired value.
+    //analogWrite(CHANNEL_PIN_MAPPING[i], output);
+  }
+}
+
+void loop()
+{
   // Handle input commands if any.
   parseCommands();
 
   // Output current configuration for each channel.
+  configureChannels();
 }
