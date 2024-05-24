@@ -38,21 +38,25 @@ uint8_t channelAmplitude[4] = {0};
 // By default sine wave modulation for each channel is 0 seconds (no delay).
 float channelSineModulation[4] = {0.0f};
 
-void setup() {
+void setup()
+{
   // Configure serial channel to baudrate of 115,200 bps.
   Serial.begin(115200);
 }
 
-void loop() {
+void parseCommands()
+{
   // Process input commands, should always start with ch and a digit.
   char commandPrefix[2];
   char subcommandPrefix[4] = {0};
   int channel = -1;
-  if (Serial.available() > 2) {
+  if (Serial.available() > 2)
+  {
     Serial.readBytes(commandPrefix, 2);
 
     // If input corresponds to a valid command, parse channel number.
-    if (COMMAND_PREFIX == commandPrefix) {
+    if (COMMAND_PREFIX == commandPrefix)
+    {
       channel = Serial.parseInt();
       Serial.print("Received command for channel: ");
       Serial.println(channel);
@@ -76,6 +80,19 @@ void loop() {
       if (SUBCOMMAND_PREFIX_CONST == subcommandPrefix)
       {
         // Set mod of operation to constant.
+        if (channel != 9)
+        {
+          // Handle single channel.
+          channelOperationMode[channel] = false;
+        }
+        else
+        {
+          // Handle all channels.
+          for (size_t i = 0; i < 4; i++)
+          {
+            channelOperationMode[i] = false;
+          }
+        }
       }
       // Sine output value.
       if (SUBCOMMAND_PREFIX_SINE == subcommandPrefix)
@@ -84,7 +101,24 @@ void loop() {
         float freq = Serial.parseFloat();
         Serial.print("Freq: ");
         Serial.println(freq);
+
         // Set mod of operation to sine wave.
+        // Update frequency.
+        if (channel != 9)
+        {
+          // Handle single channel.
+          channelOperationMode[channel] = true;
+          channelSineFrequency[channel] = freq;
+        }
+        else
+        {
+          // Handle all channels.
+          for (size_t i = 0; i < 4; i++)
+          {
+            channelOperationMode[i] = true;
+            channelSineFrequency[i] = freq;
+          }
+        }
       }
       // Set output amplitude.
       if (SUBCOMMAND_PREFIX_AMPLITUDE == subcommandPrefix)
@@ -93,6 +127,21 @@ void loop() {
         uint8_t amplitude = Serial.parseInt();
         Serial.print("Amp: ");
         Serial.println(amplitude);
+
+        // Update amplitude.
+        if (channel != 9)
+        {
+          // Handle single channel.
+          channelAmplitude[channel] = amplitude;
+        }
+        else
+        {
+          // Handle all channels.
+          for (size_t i = 0; i < 4; i++)
+          {
+            channelAmplitude[i] = amplitude;
+          }
+        }
       }
       // Set output sine wave modulation.
       if (SUBCOMMAND_PREFIX_MODULATION == subcommandPrefix)
@@ -101,6 +150,21 @@ void loop() {
         float modulation = Serial.parseFloat();
         Serial.print("Mod: ");
         Serial.println(modulation);
+
+        // Update modulation.
+        if (channel != 9)
+        {
+          // Handle single channel.
+          channelSineModulation[channel] = modulation;
+        }
+        else
+        {
+          // Handle all channels.
+          for (size_t i = 0; i < 4; i++)
+          {
+            channelSineModulation[i] = modulation;
+          }
+        }
       }
     }
     else
@@ -110,4 +174,11 @@ void loop() {
       Serial.println(Serial.readStringUntil('\n'));
     }
   }
+}
+
+void loop() {
+  // Handle input commands if any.
+  parseCommands();
+
+  // Output current configuration for each channel.
 }
