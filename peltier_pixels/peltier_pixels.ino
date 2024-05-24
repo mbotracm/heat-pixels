@@ -21,22 +21,25 @@
  * Date: 20/05/2024
  */
 
+const int CHANNEL_PIN_MAPPING[4] = {8, 9, 10, 11};
+
 const String COMMAND_PREFIX("ch");
 const String SUBCOMMAND_PREFIX_CONST("con");
 const String SUBCOMMAND_PREFIX_SINE("sin");
 const String SUBCOMMAND_PREFIX_AMPLITUDE("amp");
 const String SUBCOMMAND_PREFIX_MODULATION("mod");
+const String SUBCOMMAND_PREFIX_GET("get");
 
 // Arrays for storing the configuration for each channel.
 // By default mode of operation for each channel is constant. A value of true 
 // means sine wave output.
-bool channelOperationMode[4] = {0};
+bool channelOperationMode[4] = {0, 0, 0, 0};
 // By default sine wave frequency for each channel is 0.2 Hz (5 seconds).
-float channelSineFrequency[4] = {0.2f};
+float channelSineFrequency[4] = {0.2f, 0.2f, 0.2f, 0.2f};
 // By default output amplitude for each channel is 0 (lowest amplitude).
-uint8_t channelAmplitude[4] = {0};
+uint8_t channelAmplitude[4] = {0, 0, 0, 0};
 // By default sine wave modulation for each channel is 0 seconds (no delay).
-float channelSineModulation[4] = {0.0f};
+float channelSineModulation[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
 void setup()
 {
@@ -70,6 +73,17 @@ void parseCommands()
         return;
       }
 
+      // Channel IDs in general, unless a specific channel was requested.
+      uint8_t minChannel = 0;
+      uint8_t maxChannel = 4;
+
+      if (channel != 9)
+      {
+        // Handle single channel.
+        minChannel = channel;
+        maxChannel = channel + 1;
+      }
+
       // Parse specific command.
       Serial.readBytes(subcommandPrefix, 3);
       Serial.print("Subcommand: ");
@@ -80,18 +94,10 @@ void parseCommands()
       if (SUBCOMMAND_PREFIX_CONST == subcommandPrefix)
       {
         // Set mod of operation to constant.
-        if (channel != 9)
+        // Handle relevant channels.
+        for (uint8_t i = minChannel; i < maxChannel; i++)
         {
-          // Handle single channel.
-          channelOperationMode[channel] = false;
-        }
-        else
-        {
-          // Handle all channels.
-          for (size_t i = 0; i < 4; i++)
-          {
-            channelOperationMode[i] = false;
-          }
+          channelOperationMode[i] = false;
         }
       }
       // Sine output value.
@@ -104,20 +110,11 @@ void parseCommands()
 
         // Set mod of operation to sine wave.
         // Update frequency.
-        if (channel != 9)
+        // Handle relevant channels.
+        for (uint8_t i = minChannel; i < maxChannel; i++)
         {
-          // Handle single channel.
-          channelOperationMode[channel] = true;
-          channelSineFrequency[channel] = freq;
-        }
-        else
-        {
-          // Handle all channels.
-          for (size_t i = 0; i < 4; i++)
-          {
-            channelOperationMode[i] = true;
-            channelSineFrequency[i] = freq;
-          }
+          channelOperationMode[i] = true;
+          channelSineFrequency[i] = freq;
         }
       }
       // Set output amplitude.
@@ -129,18 +126,10 @@ void parseCommands()
         Serial.println(amplitude);
 
         // Update amplitude.
-        if (channel != 9)
+        // Handle relevant channels.
+        for (uint8_t i = minChannel; i < maxChannel; i++)
         {
-          // Handle single channel.
-          channelAmplitude[channel] = amplitude;
-        }
-        else
-        {
-          // Handle all channels.
-          for (size_t i = 0; i < 4; i++)
-          {
-            channelAmplitude[i] = amplitude;
-          }
+          channelAmplitude[i] = amplitude;
         }
       }
       // Set output sine wave modulation.
@@ -152,18 +141,30 @@ void parseCommands()
         Serial.println(modulation);
 
         // Update modulation.
-        if (channel != 9)
+        // Handle relevant channels.
+        for (uint8_t i = minChannel; i < maxChannel; i++)
         {
-          // Handle single channel.
-          channelSineModulation[channel] = modulation;
+          channelSineModulation[i] = modulation;
         }
-        else
+      }
+      // Print channel configuration.
+      if (SUBCOMMAND_PREFIX_GET == subcommandPrefix)
+      {
+        // Update modulation.
+        // Handle relevant channels.
+        Serial.println("--- CONFIG ---");
+        for (uint8_t i = minChannel; i < maxChannel; i++)
         {
-          // Handle all channels.
-          for (size_t i = 0; i < 4; i++)
-          {
-            channelSineModulation[i] = modulation;
-          }
+          Serial.print("Channel: ");
+          Serial.println(i);
+          Serial.print("Mod: ");
+          Serial.println(channelOperationMode[i]);
+          Serial.print("Sine Freq: ");
+          Serial.println(channelSineFrequency[i]);
+          Serial.print("Amplitude: ");
+          Serial.println(channelAmplitude[i]);
+          Serial.print("Sine Mod: ");
+          Serial.println(channelSineModulation[i]);
         }
       }
     }
