@@ -27,6 +27,17 @@ const String SUBCOMMAND_PREFIX_SINE("sin");
 const String SUBCOMMAND_PREFIX_AMPLITUDE("amp");
 const String SUBCOMMAND_PREFIX_MODULATION("mod");
 
+// Arrays for storing the configuration for each channel.
+// By default mode of operation for each channel is constant. A value of true 
+// means sine wave output.
+bool channelOperationMode[4] = {0};
+// By default sine wave frequency for each channel is 0.2 Hz (5 seconds).
+float channelSineFrequency[4] = {0.2f};
+// By default output amplitude for each channel is 0 (lowest amplitude).
+uint8_t channelAmplitude[4] = {0};
+// By default sine wave modulation for each channel is 0 seconds (no delay).
+float channelSineModulation[4] = {0.0f};
+
 void setup() {
   // Configure serial channel to baudrate of 115,200 bps.
   Serial.begin(115200);
@@ -64,7 +75,7 @@ void loop() {
         float freq = Serial.parseFloat();
         Serial.print("Freq: ");
         Serial.println(freq);
-        // Set mod of operation to constant.
+        // Set mod of operation to sine wave.
       }
       // Set output amplitude.
       if (SUBCOMMAND_PREFIX_AMPLITUDE == subcommandPrefix)
