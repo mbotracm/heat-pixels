@@ -4,7 +4,7 @@
  * direct USB or via a Bluetooth connection.
  *
  * MOSFET channel to Arduino pin mapping (using proto shield extension):
- * - CH0 -> 8
+ * - CH0 -> 5
  * - CH1 -> 9
  * - CH2 -> 10
  * - CH3 -> 11
@@ -21,7 +21,7 @@
  * Date: 20/05/2024
  */
 
-const int CHANNEL_PIN_MAPPING[4] = {8, 9, 10, 11};
+const int CHANNEL_PIN_MAPPING[4] = {5, 9, 10, 11};
 
 const String COMMAND_PREFIX("ch");
 const String SUBCOMMAND_PREFIX_CONST("con");
@@ -37,7 +37,7 @@ bool channelOperationMode[4] = {0, 0, 0, 0};
 // By default sine wave frequency for each channel is 0.2 Hz (5 seconds).
 float channelSineFrequency[4] = {0.2f, 0.2f, 0.2f, 0.2f};
 // By default output amplitude for each channel is 0 (lowest amplitude).
-uint8_t channelAmplitude[4] = {0, 0, 0, 0};
+int channelAmplitude[4] = {0, 0, 0, 0};
 // By default sine wave modulation for each channel is 0 seconds (no delay).
 float channelSineModulation[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
@@ -127,7 +127,7 @@ void parseCommands()
       if (SUBCOMMAND_PREFIX_AMPLITUDE == subcommandPrefix)
       {
         // Parse desired amplitude.
-        uint8_t amplitude = Serial.parseInt();
+        int amplitude = Serial.parseInt();
         Serial.print("Amp: ");
         Serial.println(amplitude);
 
@@ -207,7 +207,11 @@ void configureChannels()
     }
 
     // Output desired value.
-    //analogWrite(CHANNEL_PIN_MAPPING[i], output);
+    // TODO this method of using PWM actually specifies the duty cycle of the
+    // signal. So it supports a constant mode of operation.
+    // To fully support a sine wave, we'll have to modify the duty cycle in 
+    // more granular way.
+    analogWrite(CHANNEL_PIN_MAPPING[i], output);
   }
 }
 
