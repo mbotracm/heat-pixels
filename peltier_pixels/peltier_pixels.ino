@@ -41,6 +41,9 @@ int channelAmplitude[4] = {0, 0, 0, 0};
 // By default sine wave modulation for each channel is 0 seconds (no delay).
 float channelSineModulation[4] = {0.0f, 0.0f, 0.0f, 0.0f};
 
+// Indicator variable to update a channel after serial command.
+int updateChannel = -1;
+
 void setup()
 {
   // Configure serial channel to baudrate of 115,200 bps.
@@ -105,6 +108,8 @@ void parseCommands()
         {
           channelOperationMode[i] = false;
         }
+
+        updateChannel = channel;
       }
       // Sine output value.
       if (SUBCOMMAND_PREFIX_SINE == subcommandPrefix)
@@ -122,6 +127,8 @@ void parseCommands()
           channelOperationMode[i] = true;
           channelSineFrequency[i] = freq;
         }
+
+        updateChannel = channel;
       }
       // Set output amplitude.
       if (SUBCOMMAND_PREFIX_AMPLITUDE == subcommandPrefix)
@@ -137,6 +144,8 @@ void parseCommands()
         {
           channelAmplitude[i] = amplitude;
         }
+
+        updateChannel = channel;
       }
       // Set output sine wave modulation.
       if (SUBCOMMAND_PREFIX_MODULATION == subcommandPrefix)
@@ -152,6 +161,8 @@ void parseCommands()
         {
           channelSineModulation[i] = modulation;
         }
+
+        updateChannel = channel;
       }
       // Print channel configuration.
       if (SUBCOMMAND_PREFIX_GET == subcommandPrefix)
@@ -185,8 +196,28 @@ void parseCommands()
 
 void configureChannels()
 {
+  // Don't send channel commands if not required.
+  if (updateChannel == -1)
+  {
+    return;
+  }
+
+  // Channel IDs in general, unless a specific channel was requested.
+  uint8_t minChannel = 0;
+  uint8_t maxChannel = 4;
+
+  if (updateChannel != 9)
+  {
+    // Handle single channel.
+    minChannel = updateChannel;
+    maxChannel = updateChannel + 1;
+  }
+
+  Serial.print("Updating channel: ");
+  Serial.println(updateChannel);
+
   // Loop over all channel and output corresponding configuration.
-  for (uint8_t i = 0; i < 4; i++)
+  for (uint8_t i = minChannel; i < maxChannel; i++)
   {
     int output = 0;
 
@@ -213,6 +244,9 @@ void configureChannels()
     // more granular way.
     analogWrite(CHANNEL_PIN_MAPPING[i], output);
   }
+
+  // After update is complete, clear status.
+  updateChannel = -1;
 }
 
 void loop()
