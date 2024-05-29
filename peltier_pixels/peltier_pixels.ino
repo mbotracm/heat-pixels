@@ -59,7 +59,7 @@ void setup()
 void parseCommands()
 {
   // Process input commands, should always start with ch and a digit.
-  char commandPrefix[2];
+  char commandPrefix[3] = {0};
   char subcommandPrefix[4] = {0};
   int channel = -1;
   if (Serial.available() > 2)
@@ -188,7 +188,7 @@ void parseCommands()
     else
     {
       Serial.print("Unrecognized command: ");
-      Serial.print(commandPrefix);
+      Serial.println(commandPrefix);
       Serial.println(Serial.readStringUntil('\n'));
     }
   }
